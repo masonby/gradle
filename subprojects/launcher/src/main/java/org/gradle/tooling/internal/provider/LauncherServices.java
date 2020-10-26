@@ -16,7 +16,6 @@
 
 package org.gradle.tooling.internal.provider;
 
-import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.deployment.internal.DeploymentRegistryInternal;
 import org.gradle.initialization.BuildCancellationToken;
 import org.gradle.initialization.BuildEventConsumer;
@@ -27,6 +26,7 @@ import org.gradle.internal.buildevents.BuildStartedTime;
 import org.gradle.internal.classpath.CachedClasspathTransformer;
 import org.gradle.internal.concurrent.ExecutorFactory;
 import org.gradle.internal.event.ListenerManager;
+import org.gradle.internal.execution.RelevantFileSystemInputListeners;
 import org.gradle.internal.filewatch.DefaultFileSystemChangeWaiterFactory;
 import org.gradle.internal.filewatch.FileSystemChangeWaiterFactory;
 import org.gradle.internal.filewatch.FileWatcherFactory;
@@ -131,7 +131,7 @@ public class LauncherServices extends AbstractPluginServiceRegistry {
                                                              ExecutorFactory executorFactory,
                                                              ListenerManager listenerManager,
                                                              BuildOperationListenerManager buildOperationListenerManager,
-                                                             TaskInputsListeners inputsListeners,
+                                                             RelevantFileSystemInputListeners inputsListeners,
                                                              StyledTextOutputFactory styledTextOutputFactory,
                                                              FileSystemChangeWaiterFactory fileSystemChangeWaiterFactory,
                                                              BuildRequestMetaData requestMetaData,

@@ -19,7 +19,6 @@ package org.gradle.execution;
 import org.gradle.StartParameter;
 import org.gradle.api.execution.TaskActionListener;
 import org.gradle.api.execution.TaskExecutionListener;
-import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.api.internal.cache.StringInterner;
 import org.gradle.api.internal.changedetection.TaskExecutionModeResolver;
 import org.gradle.api.internal.changedetection.changes.DefaultTaskExecutionModeResolver;
@@ -49,6 +48,7 @@ import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.execution.BuildOutputCleanupRegistry;
 import org.gradle.internal.execution.ExecutionEngine;
 import org.gradle.internal.execution.OutputChangeListener;
+import org.gradle.internal.execution.RelevantFileSystemInputListeners;
 import org.gradle.internal.execution.history.ExecutionHistoryStore;
 import org.gradle.internal.execution.history.OutputFilesRepository;
 import org.gradle.internal.file.DefaultReservedFileSystemLocationRegistry;
@@ -92,13 +92,13 @@ public class ProjectExecutionServices extends DefaultServiceRegistry {
         BuildOutputCleanupRegistry buildOutputCleanupRegistry,
         Deleter deleter,
         OutputChangeListener outputChangeListener,
-        TaskInputsListeners taskInputsListeners
+        RelevantFileSystemInputListeners inputListeners
     ) {
         return new DefaultEmptySourceTaskSkipper(
             buildOutputCleanupRegistry,
             deleter,
             outputChangeListener,
-            taskInputsListeners
+            inputListeners
         );
     }
 

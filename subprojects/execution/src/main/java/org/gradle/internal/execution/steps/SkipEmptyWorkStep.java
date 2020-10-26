@@ -44,7 +44,7 @@ public class SkipEmptyWorkStep<C extends AfterPreviousExecutionContext> implemen
             .map(AfterPreviousExecutionState::getOutputFileProperties)
             .orElse(ImmutableSortedMap.of());
         UnitOfWork.Identity identity = context.getIdentity();
-        return work.skipIfInputsEmpty(outputFilesAfterPreviousExecution)
+        return work.skipIfInputsEmpty(context.getIdentity(), outputFilesAfterPreviousExecution)
             .map(skippedOutcome -> {
                 work.getHistory()
                     .ifPresent(history -> history.remove(identity.getUniqueId()));

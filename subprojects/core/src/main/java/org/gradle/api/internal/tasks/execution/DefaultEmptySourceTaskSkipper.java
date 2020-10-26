@@ -16,7 +16,6 @@
 
 package org.gradle.api.internal.tasks.execution;
 
-import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.file.FileCollectionInternal;
@@ -24,6 +23,8 @@ import org.gradle.internal.Cast;
 import org.gradle.internal.execution.BuildOutputCleanupRegistry;
 import org.gradle.internal.execution.ExecutionOutcome;
 import org.gradle.internal.execution.OutputChangeListener;
+import org.gradle.internal.execution.RelevantFileSystemInputListeners;
+import org.gradle.internal.execution.UnitOfWork;
 import org.gradle.internal.execution.impl.OutputsCleaner;
 import org.gradle.internal.file.Deleter;
 import org.gradle.internal.fingerprint.FileCollectionFingerprint;
@@ -41,23 +42,24 @@ public class DefaultEmptySourceTaskSkipper implements EmptySourceTaskSkipper {
     private final BuildOutputCleanupRegistry buildOutputCleanupRegistry;
     private final Deleter deleter;
     private final OutputChangeListener outputChangeListener;
-    private final TaskInputsListeners taskInputsListeners;
+    private final RelevantFileSystemInputListeners inputsListeners;
 
     public DefaultEmptySourceTaskSkipper(
         BuildOutputCleanupRegistry buildOutputCleanupRegistry,
         Deleter deleter,
         OutputChangeListener outputChangeListener,
-        TaskInputsListeners taskInputsListeners
+        RelevantFileSystemInputListeners inputListeners
     ) {
         this.buildOutputCleanupRegistry = buildOutputCleanupRegistry;
         this.deleter = deleter;
         this.outputChangeListener = outputChangeListener;
-        this.taskInputsListeners = taskInputsListeners;
+        this.inputsListeners = inputListeners;
     }
 
     @Override
     public Optional<ExecutionOutcome> skipIfEmptySources(
         TaskInternal task,
+        UnitOfWork.Identity identity,
         boolean hasSourceFiles,
         FileCollection inputFiles,
         FileCollection sourceFiles,
@@ -65,10 +67,10 @@ public class DefaultEmptySourceTaskSkipper implements EmptySourceTaskSkipper {
     ) {
         if (hasSourceFiles && sourceFiles.isEmpty()) {
             ExecutionOutcome skipOutcome = skipOutcomeFor(task, outputFileSnapshots);
-            broadcastFileSystemInputsOf(task, sourceFiles);
+            broadcastFileSystemInputsOf(identity, sourceFiles);
             return Optional.of(skipOutcome);
         } else {
-            broadcastFileSystemInputsOf(task, inputFiles);
+            broadcastFileSystemInputsOf(identity, inputFiles);
             return Optional.empty();
         }
     }
@@ -105,9 +107,9 @@ public class DefaultEmptySourceTaskSkipper implements EmptySourceTaskSkipper {
         return outputsCleaner.getDidWork();
     }
 
-    private void broadcastFileSystemInputsOf(TaskInternal task, FileCollection fileSystemInputs) {
-        taskInputsListeners.broadcastFileSystemInputsOf(
-            task,
+    private void broadcastFileSystemInputsOf(UnitOfWork.Identity identity, FileCollection fileSystemInputs) {
+        inputsListeners.broadcastRelevantFileSystemInputsOf(
+            identity,
             Cast.cast(FileCollectionInternal.class, fileSystemInputs)
         );
     }

@@ -17,8 +17,6 @@
 package org.gradle.internal.service.scopes;
 
 import com.google.common.collect.Iterables;
-import org.gradle.api.execution.internal.DefaultTaskInputsListeners;
-import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.api.internal.ClassPathRegistry;
 import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultClassPathProvider;
@@ -64,8 +62,10 @@ import org.gradle.internal.concurrent.ExecutorFactory;
 import org.gradle.internal.deprecation.DeprecationLogger;
 import org.gradle.internal.environment.GradleBuildEnvironment;
 import org.gradle.internal.event.ListenerManager;
+import org.gradle.internal.execution.RelevantFileSystemInputListeners;
 import org.gradle.internal.execution.history.changes.DefaultExecutionStateChangeDetector;
 import org.gradle.internal.execution.history.changes.ExecutionStateChangeDetector;
+import org.gradle.internal.execution.impl.DefaultRelevantFileSystemInputListeners;
 import org.gradle.internal.execution.steps.ValidateStep;
 import org.gradle.internal.filewatch.DefaultFileWatcherFactory;
 import org.gradle.internal.filewatch.FileWatcherFactory;
@@ -271,8 +271,8 @@ public class GlobalScopeServices extends WorkerSharedGlobalScopeServices {
         return new BuildLayoutFactory();
     }
 
-    TaskInputsListeners createTaskInputsListener(ListenerManager listenerManager) {
-        return new DefaultTaskInputsListeners(listenerManager);
+    RelevantFileSystemInputListeners createTaskInputsListener(ListenerManager listenerManager) {
+        return new DefaultRelevantFileSystemInputListeners(listenerManager);
     }
 
     @Override

@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package org.gradle.api.execution.internal;
+package org.gradle.internal.execution;
 
-import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.file.FileCollectionInternal;
 import org.gradle.internal.service.scopes.EventScope;
 import org.gradle.internal.service.scopes.Scope.Global;
 
-/**
- * Registered via {@link TaskInputsListeners}.
- */
 @EventScope(Global.class)
-public interface TaskInputsListener {
+public interface RelevantFileSystemInputListener {
 
     /**
-     * Called when the execution of the given task is imminent, or would have been if the given file collection was not currently empty.
-     * <p>
-     * The given files may not == taskInternal.inputs.files, as only a subset of that collection may be relevant to the task execution.
+     * Called before the execution of the given work unit with its relevant file system inputs.
      *
-     * @param task the task to be executed
-     * @param fileSystemInputs the file system inputs relevant to the task execution
+     * The given files may only contain the relevant subset of all the inputs of the work.
+     * This happens when the work has some source input properties that are empty.
+     * In such a case any non-source change will be ignored by
+     * {@link org.gradle.internal.execution.steps.SkipEmptyWorkStep} until some source
+     * files are added.
      */
-    void onExecute(TaskInternal task, FileCollectionInternal fileSystemInputs);
+    void handleRelevantFileSystemInputsOf(UnitOfWork.Identity identity, FileCollectionInternal files);
 
 }

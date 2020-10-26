@@ -16,8 +16,6 @@
 
 package org.gradle.tooling.internal.provider;
 
-import org.gradle.api.execution.internal.TaskInputsListener;
-import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.api.internal.file.FileSystemSubset;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.deployment.internal.Deployment;
@@ -33,6 +31,8 @@ import org.gradle.initialization.DefaultContinuousExecutionGate;
 import org.gradle.internal.buildevents.BuildStartedTime;
 import org.gradle.internal.concurrent.ExecutorFactory;
 import org.gradle.internal.event.ListenerManager;
+import org.gradle.internal.execution.RelevantFileSystemInputListener;
+import org.gradle.internal.execution.RelevantFileSystemInputListeners;
 import org.gradle.internal.filewatch.DefaultFileWatcherEventListener;
 import org.gradle.internal.filewatch.FileSystemChangeWaiter;
 import org.gradle.internal.filewatch.FileSystemChangeWaiterFactory;
@@ -54,7 +54,7 @@ import java.util.function.Supplier;
 
 public class ContinuousBuildActionExecuter implements BuildActionExecuter<BuildActionParameters, BuildSessionContext> {
     private final BuildActionExecuter<BuildActionParameters, BuildSessionContext> delegate;
-    private final TaskInputsListeners inputsListeners;
+    private final RelevantFileSystemInputListeners inputsListeners;
     private final BuildRequestMetaData requestMetaData;
     private final OperatingSystem operatingSystem;
     private final BuildCancellationToken cancellationToken;
@@ -68,7 +68,7 @@ public class ContinuousBuildActionExecuter implements BuildActionExecuter<BuildA
 
     public ContinuousBuildActionExecuter(
         FileSystemChangeWaiterFactory changeWaiterFactory,
-        TaskInputsListeners inputsListeners,
+        RelevantFileSystemInputListeners inputsListeners,
         StyledTextOutputFactory styledTextOutputFactory,
         ExecutorFactory executorFactory,
         BuildRequestMetaData requestMetaData,
@@ -199,13 +199,13 @@ public class ContinuousBuildActionExecuter implements BuildActionExecuter<BuildA
         FileSystemChangeWaiter waiter,
         BuildSessionContext buildSession
     ) {
-        return withTaskInputsListener(
-            (task, fileSystemInputs) -> waiter.watch(FileSystemSubset.of(fileSystemInputs)),
+        return withInputsListener(
+            (identity, fileSystemInputs) -> waiter.watch(FileSystemSubset.of(fileSystemInputs)),
             () -> delegate.execute(action, actionParameters, buildSession)
         );
     }
 
-    private <T> T withTaskInputsListener(TaskInputsListener listener, Supplier<T> supplier) {
+    private <T> T withInputsListener(RelevantFileSystemInputListener listener, Supplier<T> supplier) {
         try {
             inputsListeners.addListener(listener);
             return supplier.get();

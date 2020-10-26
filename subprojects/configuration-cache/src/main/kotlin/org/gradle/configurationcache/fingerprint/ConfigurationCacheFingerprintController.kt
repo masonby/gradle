@@ -16,7 +16,6 @@
 
 package org.gradle.configurationcache.fingerprint
 
-import org.gradle.api.execution.internal.TaskInputsListeners
 import org.gradle.api.internal.file.FileCollectionFactory
 import org.gradle.api.internal.file.FileCollectionInternal
 import org.gradle.api.internal.file.collections.DirectoryFileTreeFactory
@@ -29,6 +28,7 @@ import org.gradle.configurationcache.serialization.DefaultWriteContext
 import org.gradle.configurationcache.serialization.ReadContext
 import org.gradle.internal.concurrent.Stoppable
 import org.gradle.internal.event.ListenerManager
+import org.gradle.internal.execution.RelevantFileSystemInputListeners
 import org.gradle.internal.fingerprint.impl.AbsolutePathFileCollectionFingerprinter
 import org.gradle.internal.hash.HashCode
 import org.gradle.internal.service.scopes.Scopes
@@ -48,7 +48,7 @@ import java.io.OutputStream
 internal
 class ConfigurationCacheFingerprintController internal constructor(
     private val startParameter: ConfigurationCacheStartParameter,
-    private val taskInputsListeners: TaskInputsListeners,
+    private val inputsListeners: RelevantFileSystemInputListeners,
     private val valueSourceProviderFactory: ValueSourceProviderFactory,
     private val fileSystemAccess: FileSystemAccess,
     private val fileCollectionFingerprinter: AbsolutePathFileCollectionFingerprinter,
@@ -160,12 +160,12 @@ class ConfigurationCacheFingerprintController internal constructor(
     fun addListener(listener: ConfigurationCacheFingerprintWriter) {
         listenerManager.addListener(listener)
         buildTreeListenerManager.service.addListener(listener)
-        taskInputsListeners.addListener(listener)
+        inputsListeners.addListener(listener)
     }
 
     private
     fun removeListener(listener: ConfigurationCacheFingerprintWriter) {
-        taskInputsListeners.removeListener(listener)
+        inputsListeners.removeListener(listener)
         buildTreeListenerManager.service.removeListener(listener)
         listenerManager.removeListener(listener)
     }

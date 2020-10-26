@@ -19,8 +19,6 @@ package org.gradle.configurationcache.fingerprint
 import com.google.common.collect.Sets.newConcurrentHashSet
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
-import org.gradle.api.execution.internal.TaskInputsListener
-import org.gradle.api.internal.TaskInternal
 import org.gradle.api.internal.artifacts.configurations.dynamicversion.Expiry
 import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.ChangingValueDependencyResolutionListener
 import org.gradle.api.internal.file.FileCollectionFactory
@@ -40,6 +38,8 @@ import org.gradle.configurationcache.fingerprint.ConfigurationCacheFingerprint.V
 import org.gradle.configurationcache.serialization.DefaultWriteContext
 import org.gradle.configurationcache.serialization.runWriteOperation
 import org.gradle.groovy.scripts.ScriptSource
+import org.gradle.internal.execution.RelevantFileSystemInputListener
+import org.gradle.internal.execution.UnitOfWork
 import org.gradle.internal.hash.HashCode
 import org.gradle.internal.resource.local.FileResourceListener
 import org.gradle.internal.scripts.ScriptExecutionListener
@@ -53,7 +53,7 @@ class ConfigurationCacheFingerprintWriter(
     private val fileCollectionFactory: FileCollectionFactory,
     private val directoryFileTreeFactory: DirectoryFileTreeFactory
 ) : ValueSourceProviderFactory.Listener,
-    TaskInputsListener,
+    RelevantFileSystemInputListener,
     ScriptExecutionListener,
     UndeclaredBuildInputListener,
     ChangingValueDependencyResolutionListener,
@@ -179,8 +179,8 @@ class ConfigurationCacheFingerprintWriter(
         }
     }
 
-    override fun onExecute(task: TaskInternal, fileSystemInputs: FileCollectionInternal) {
-        captureTaskInputs(task, fileSystemInputs)
+    override fun handleRelevantFileSystemInputsOf(identity: UnitOfWork.Identity, files: FileCollectionInternal) {
+        captureWorkInputs(identity, files)
     }
 
     private
@@ -199,10 +199,10 @@ class ConfigurationCacheFingerprintWriter(
         )
 
     private
-    fun captureTaskInputs(task: TaskInternal, fileSystemInputs: FileCollectionInternal) {
+    fun captureWorkInputs(identity: UnitOfWork.Identity, fileSystemInputs: FileCollectionInternal) {
         write(
             ConfigurationCacheFingerprint.TaskInputs(
-                task.identityPath.path,
+                identity.uniqueId,
                 simplify(fileSystemInputs),
                 host.fingerprintOf(fileSystemInputs)
             )

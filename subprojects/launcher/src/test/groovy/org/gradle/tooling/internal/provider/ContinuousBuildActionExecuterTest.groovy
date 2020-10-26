@@ -16,8 +16,7 @@
 
 package org.gradle.tooling.internal.provider
 
-import org.gradle.api.execution.internal.DefaultTaskInputsListeners
-import org.gradle.api.internal.TaskInternal
+
 import org.gradle.api.internal.file.TestFiles
 import org.gradle.deployment.internal.DeploymentRegistryInternal
 import org.gradle.initialization.BuildRequestMetaData
@@ -26,6 +25,8 @@ import org.gradle.initialization.DefaultBuildRequestContext
 import org.gradle.initialization.NoOpBuildEventConsumer
 import org.gradle.internal.buildevents.BuildStartedTime
 import org.gradle.internal.event.DefaultListenerManager
+import org.gradle.internal.execution.UnitOfWork
+import org.gradle.internal.execution.impl.DefaultRelevantFileSystemInputListeners
 import org.gradle.internal.filewatch.FileSystemChangeWaiter
 import org.gradle.internal.filewatch.FileSystemChangeWaiterFactory
 import org.gradle.internal.invocation.BuildAction
@@ -59,7 +60,7 @@ class ContinuousBuildActionExecuterTest extends ConcurrentSpec {
     def waiterFactory = Mock(FileSystemChangeWaiterFactory)
     def waiter = Mock(FileSystemChangeWaiter)
     def listenerManager = new DefaultListenerManager(Scope.Global)
-    def inputsListeners = new DefaultTaskInputsListeners(listenerManager)
+    def inputsListeners = new DefaultRelevantFileSystemInputListeners(listenerManager)
     def deploymentRegistry = Mock(DeploymentRegistryInternal)
     def buildSessionContext = Mock(BuildSessionContext)
     def executer = executer()
@@ -151,7 +152,7 @@ class ContinuousBuildActionExecuterTest extends ConcurrentSpec {
     }
 
     private void declareInput(File file) {
-        inputsListeners.broadcastFileSystemInputsOf(Mock(TaskInternal), TestFiles.fixed(file))
+        inputsListeners.broadcastRelevantFileSystemInputsOf(Mock(UnitOfWork.Identity), TestFiles.fixed(file))
     }
 
     private ContinuousBuildActionExecuter executer() {

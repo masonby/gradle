@@ -17,13 +17,13 @@
 package org.gradle.api.internal.tasks.execution
 
 import com.google.common.collect.ImmutableSortedMap
-import org.gradle.api.execution.internal.TaskInputsListeners
 import org.gradle.api.internal.TaskInternal
 import org.gradle.api.internal.file.FileCollectionInternal
 import org.gradle.api.internal.file.TestFiles
 import org.gradle.internal.execution.BuildOutputCleanupRegistry
 import org.gradle.internal.execution.ExecutionOutcome
 import org.gradle.internal.execution.OutputChangeListener
+import org.gradle.internal.execution.RelevantFileSystemInputListeners
 import org.gradle.internal.fingerprint.CurrentFileCollectionFingerprint
 import org.gradle.internal.fingerprint.impl.AbsolutePathFileCollectionFingerprinter
 import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
@@ -37,23 +37,23 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
     final task = Stub(TaskInternal)
     final inputFiles = Mock(FileCollectionInternal)
     final sourceFiles = Mock(FileCollectionInternal)
-    final taskInputsListeners = Mock(TaskInputsListeners)
+    final inputsListeners = Mock(RelevantFileSystemInputListeners)
     final cleanupRegistry = Mock(BuildOutputCleanupRegistry)
     final outputChangeListener = Mock(OutputChangeListener)
-    final skipper = new DefaultEmptySourceTaskSkipper(cleanupRegistry, TestFiles.deleter(), outputChangeListener, taskInputsListeners)
+    final skipper = new DefaultEmptySourceTaskSkipper(cleanupRegistry, TestFiles.deleter(), outputChangeListener, inputsListeners)
     final fileCollectionSnapshotter = TestFiles.fileCollectionSnapshotter()
     final fingerprinter = new AbsolutePathFileCollectionFingerprinter(fileCollectionSnapshotter)
 
     def "skips task when sourceFiles are empty and previous output is empty"() {
         when:
-        def outcome = skipper.skipIfEmptySources(task, true, inputFiles, sourceFiles, [:])
+        def outcome = skipper.skipIfEmptySources(task, identity, true, inputFiles, sourceFiles, [:])
 
         then:
         outcome.get() == ExecutionOutcome.SHORT_CIRCUITED
 
         and:
         1 * sourceFiles.empty >> true
-        1 * taskInputsListeners.broadcastFileSystemInputsOf(task, sourceFiles)
+        1 * inputsListeners.broadcastRelevantFileSystemInputsOf(task, sourceFiles)
 
         then:
         0 * _
@@ -65,7 +65,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         def previousOutputFiles = fingerprint(previousFile)
 
         when:
-        def outcome = skipper.skipIfEmptySources(task, true, inputFiles, sourceFiles, previousOutputFiles)
+        def outcome = skipper.skipIfEmptySources(task, identity, true, inputFiles, sourceFiles, previousOutputFiles)
 
         then:
         outcome.get() == ExecutionOutcome.EXECUTED_NON_INCREMENTALLY
@@ -81,7 +81,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         1 * cleanupRegistry.isOutputOwnedByBuild(previousFile.parentFile) >> false
 
         then:
-        1 * taskInputsListeners.broadcastFileSystemInputsOf(task, sourceFiles)
+        1 * inputsListeners.broadcastRelevantFileSystemInputsOf(task, sourceFiles)
 
         then:
         !previousFile.exists()
@@ -94,7 +94,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         def previousOutputFiles = fingerprint(previousFile)
 
         when:
-        def outcome = skipper.skipIfEmptySources(task, true, inputFiles, sourceFiles, previousOutputFiles)
+        def outcome = skipper.skipIfEmptySources(task, identity, true, inputFiles, sourceFiles, previousOutputFiles)
 
         then:
         outcome.get() == ExecutionOutcome.SHORT_CIRCUITED
@@ -109,7 +109,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         1 * cleanupRegistry.isOutputOwnedByBuild(previousFile) >> false
 
         then:
-        1 * taskInputsListeners.broadcastFileSystemInputsOf(task, sourceFiles)
+        1 * inputsListeners.broadcastRelevantFileSystemInputsOf(task, sourceFiles)
 
         then:
         previousFile.exists()
@@ -139,7 +139,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         overlappingFile << "overlapping file"
 
         when:
-        def outcome = skipper.skipIfEmptySources(task, true, inputFiles, sourceFiles, previousOutputFiles)
+        def outcome = skipper.skipIfEmptySources(task, identity, true, inputFiles, sourceFiles, previousOutputFiles)
 
         then:
         outcome.get() == ExecutionOutcome.EXECUTED_NON_INCREMENTALLY
@@ -165,7 +165,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         }
 
         then:
-        1 * taskInputsListeners.broadcastFileSystemInputsOf(task, sourceFiles)
+        1 * inputsListeners.broadcastRelevantFileSystemInputsOf(task, sourceFiles)
 
         then:
         0 * _
@@ -177,7 +177,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         def previousOutputFiles = fingerprint(previousFile)
 
         when:
-        skipper.skipIfEmptySources(task, true, inputFiles, sourceFiles, previousOutputFiles)
+        skipper.skipIfEmptySources(task, identity, true, inputFiles, sourceFiles, previousOutputFiles)
 
         then:
         def ex = thrown Exception
@@ -200,7 +200,7 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
 
     def "does not skip when sourceFiles are not empty"() {
         when:
-        def outcome = skipper.skipIfEmptySources(task, true, inputFiles, sourceFiles, [:])
+        def outcome = skipper.skipIfEmptySources(task, identity, true, inputFiles, sourceFiles, [:])
 
         then:
         !outcome.present
@@ -209,19 +209,19 @@ class DefaultEmptySourceTaskSkipperTest extends Specification {
         1 * sourceFiles.empty >> false
 
         then:
-        1 * taskInputsListeners.broadcastFileSystemInputsOf(task, inputFiles)
+        1 * inputsListeners.broadcastRelevantFileSystemInputsOf(task, inputFiles)
         0 * _
     }
 
     def "does not skip when it has not declared any source files"() {
         when:
-        def outcome = skipper.skipIfEmptySources(task, false, inputFiles, sourceFiles, [:])
+        def outcome = skipper.skipIfEmptySources(task, identity, false, inputFiles, sourceFiles, [:])
 
         then:
         !outcome.present
 
         and:
-        1 * taskInputsListeners.broadcastFileSystemInputsOf(task, inputFiles)
+        1 * inputsListeners.broadcastRelevantFileSystemInputsOf(task, inputFiles)
         0 * _
     }
 

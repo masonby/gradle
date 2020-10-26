@@ -13,6 +13,9 @@ dependencies {
     implementation(project(":native"))
     implementation(project(":logging"))
     implementation(project(":process-services"))
+    implementation(project(":execution")) {
+        because("We need this because of RelevantFileSystemInputListeners")
+    }
     implementation(project(":files"))
     implementation(project(":file-collections"))
     implementation(project(":snapshots"))

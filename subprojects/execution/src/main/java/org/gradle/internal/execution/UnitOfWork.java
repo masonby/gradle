@@ -213,7 +213,7 @@ public interface UnitOfWork extends Describable {
      * If it can, either {@link ExecutionOutcome#EXECUTED_NON_INCREMENTALLY} or {@link ExecutionOutcome#SHORT_CIRCUITED} is
      * returned depending on whether cleanup of existing outputs had to be performed.
      */
-    default Optional<ExecutionOutcome> skipIfInputsEmpty(ImmutableSortedMap<String, FileCollectionFingerprint> outputFilesAfterPreviousExecution) {
+    default Optional<ExecutionOutcome> skipIfInputsEmpty(Identity identity, ImmutableSortedMap<String, FileCollectionFingerprint> outputFilesAfterPreviousExecution) {
         return Optional.empty();
     }
 

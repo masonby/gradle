@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package org.gradle.api.execution.internal;
+package org.gradle.internal.execution;
 
-import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.file.FileCollectionInternal;
 import org.gradle.internal.service.scopes.Scope.Global;
 import org.gradle.internal.service.scopes.ServiceScope;
 
-/**
- * Allows the registration of {@link TaskInputsListener task inputs listeners}.
- */
 @ServiceScope(Global.class)
-public interface TaskInputsListeners {
+public interface RelevantFileSystemInputListeners {
 
     /**
-     * Registers the listener with the build, the listener can be unregistered with {@link #removeListener(TaskInputsListener)}.
+     * Registers the listener with the build, the listener can be unregistered with {@link #removeListener(RelevantFileSystemInputListener)}.
      */
-    void addListener(TaskInputsListener listener);
+    void addListener(RelevantFileSystemInputListener listener);
 
-    void removeListener(TaskInputsListener listener);
+    void removeListener(RelevantFileSystemInputListener listener);
 
-    void broadcastFileSystemInputsOf(TaskInternal task, FileCollectionInternal fileSystemInputs);
+    void broadcastRelevantFileSystemInputsOf(UnitOfWork.Identity identity, FileCollectionInternal files);
+
 }

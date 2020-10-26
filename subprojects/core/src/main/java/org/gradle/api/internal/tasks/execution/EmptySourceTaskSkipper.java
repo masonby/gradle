@@ -19,11 +19,12 @@ package org.gradle.api.internal.tasks.execution;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.internal.execution.ExecutionOutcome;
+import org.gradle.internal.execution.UnitOfWork;
 import org.gradle.internal.fingerprint.FileCollectionFingerprint;
 
 import java.util.Map;
 import java.util.Optional;
 
 public interface EmptySourceTaskSkipper {
-    Optional<ExecutionOutcome> skipIfEmptySources(TaskInternal task, boolean hasSourceFiles, FileCollection inputFiles, FileCollection sourceFiles, Map<String, FileCollectionFingerprint> outputFileSnapshots);
+    Optional<ExecutionOutcome> skipIfEmptySources(TaskInternal task, UnitOfWork.Identity identity, boolean hasSourceFiles, FileCollection inputFiles, FileCollection sourceFiles, Map<String, FileCollectionFingerprint> outputFileSnapshots);
 }

@@ -51,7 +51,7 @@ class SkipEmptyWorkStepTest extends StepSpec<AfterPreviousExecutionContext> {
 
         _ * context.afterPreviousExecutionState >> Optional.of(afterPreviousExecutionState)
         1 * afterPreviousExecutionState.outputFileProperties >> outputFingerprints
-        _ * work.skipIfInputsEmpty(outputFingerprints) >> Optional.empty()
+        _ * work.skipIfInputsEmpty(identity, outputFingerprints) >> Optional.empty()
 
         then:
         1 * delegate.execute(work, context) >> delegateResult
@@ -68,7 +68,7 @@ class SkipEmptyWorkStepTest extends StepSpec<AfterPreviousExecutionContext> {
 
         _ * context.afterPreviousExecutionState >> Optional.of(afterPreviousExecutionState)
         1 * afterPreviousExecutionState.outputFileProperties >> outputFingerprints
-        _ * work.skipIfInputsEmpty(outputFingerprints) >> Optional.of(outcome)
+        _ * work.skipIfInputsEmpty(identity, outputFingerprints) >> Optional.of(outcome)
 
         then:
         1 * executionHistoryStore.remove(identity.uniqueId)
